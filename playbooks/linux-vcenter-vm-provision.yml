@@ -7,7 +7,7 @@
 #   memory, network, and guest customization. Delegates to localhost
 #   (vCenter API calls). Designed for AAP survey-driven launches.
 #
-# Tags: pillar:cloud,lifecycle:day1,maturity:l2,platform:linux,tech:vmware
+# Tags: pillar:cloud,lifecycle:day1,maturity:l2-process-oriented,platform:linux,tech:vmware
 #
 # Author: Ansible Services Platform Team, Red Hat
 # Version: 1.0.0
