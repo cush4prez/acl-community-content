@@ -37,9 +37,39 @@ for unlinted or untested YAML.
 - [ ] No secrets, customer names, or internal-only URLs
 - [ ] Commits include `Signed-off-by`
 
+## Workflow
+
+This is a **private** repository. All contributors must be org members with
+write access (granted via the `acl-contributors` team).
+
+1. **Create a branch** from the latest `main`:
+   ```bash
+   git checkout main && git pull
+   git checkout -b feat/linux-<your-use-case>
+   ```
+   Branch naming convention:
+   - `feat/linux-<use-case>` — new playbook or role
+   - `feat/win-<use-case>` — Windows content
+   - `fix/<playbook-name>` — bug fix or lint correction
+   - `docs/<topic>` — documentation only
+
+2. **Make your changes**, sign each commit:
+   ```bash
+   git commit -s -m "feat: add RHEL 8 DISA STIG audit playbook"
+   ```
+
+3. **Open a Pull Request** against `main`. Direct pushes to `main` are blocked
+   by branch protection — all changes must go through a PR.
+
+4. **One approval** from an SPT maintainer is required before merge.
+
 ## Review
 
 SPT maintainers (`americas-spt`) review and merge. One approval is required on
 `main`. Maintainers may ask for lint or test evidence before merge.
+
+> **Branch protection note:** `main` is protected on this private repo —
+> direct pushes are blocked and at least one approving review is required.
+> This applies to all contributors including maintainers.
 
 Questions: open a GitHub issue (not for security — see [SECURITY.md](SECURITY.md)).
