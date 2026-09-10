@@ -42,10 +42,20 @@ for unlinted or untested YAML.
 This is a **private** repository. All contributors must be org members with
 write access (granted via the `acl-contributors` team).
 
-1. **Create a branch** from the latest `main`:
+1. **Fork the repository** to your personal GitHub account via the GitHub UI
+   (your fork will also be private).
+
+2. **Clone your fork** and add the upstream remote:
    ```bash
-   git checkout main && git pull
-   git checkout -b feat/linux-<your-use-case>
+   git clone https://github.com/<your-github-handle>/acl-community-content.git
+   cd acl-community-content
+   git remote add upstream https://github.com/redhat-services-platform-team/acl-community-content.git
+   ```
+
+3. **Create a branch on your fork** from the latest upstream `main`:
+   ```bash
+   git fetch upstream
+   git checkout -b feat/linux-<your-use-case> upstream/main
    ```
    Branch naming convention:
    - `feat/linux-<use-case>` — new playbook or role
@@ -53,15 +63,16 @@ write access (granted via the `acl-contributors` team).
    - `fix/<playbook-name>` — bug fix or lint correction
    - `docs/<topic>` — documentation only
 
-2. **Make your changes**, sign each commit:
+4. **Make your changes**, sign each commit:
    ```bash
    git commit -s -m "feat: add RHEL 8 DISA STIG audit playbook"
    ```
 
-3. **Open a Pull Request** against `main`. Direct pushes to `main` are blocked
-   by branch protection — all changes must go through a PR.
+5. **Push to your fork** and **open a Pull Request** targeting `main` on the
+   upstream repo. Direct pushes to `main` are blocked — all changes must go
+   through a PR from a fork branch.
 
-4. **One approval** from an SPT maintainer is required before merge.
+6. **One approval** from an SPT maintainer is required before merge.
 
 ## Review
 
