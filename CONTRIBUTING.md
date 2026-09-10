@@ -39,8 +39,9 @@ for unlinted or untested YAML.
 
 ## Workflow
 
-This is a **private** repository. All contributors must be org members with
-write access (granted via the `acl-contributors` team).
+This is a **private** repository. All contributors must be members of the
+`redhat-services-platform-team` GitHub org (read access is sufficient to fork
+and open a pull request).
 
 1. **Fork the repository** to your personal GitHub account via the GitHub UI
    (your fork will also be private).
