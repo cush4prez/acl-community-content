@@ -1,0 +1,56 @@
+---
+tasks:
+  - name: Get Auth Ticket from Proxmox
+    ansible.builtin.uri:
+      url: "https://{{ dns_register_proxmox_api_host }}:{{ proxmox_api_port }}/api2/json/access/ticket"
+      method: POST
+      validate_certs: false
+      body_format: form-urlencoded
+      body:
+        username: "{{ dns_register_proxmox_user }}"
+        password: "{{ dns_register_proxmox_password }}"
+    register: dns_register_auth
+
+  - name: Wait for Guest Agent IPv4
+    ansible.builtin.uri:
+      url: "https://{{ dns_register_proxmox_api_host }}:{{ proxmox_api_port }}/api2/json/nodes/{{ dns_register_proxmox_node }}/qemu/{{ dns_register_shared_vmid }}/agent/network-get-interfaces"
+      method: GET
+      validate_certs: false
+      headers:
+        Cookie: "PVEAuthCookie={{ dns_register_auth.json.data.ticket }}"
+    register: dns_register_agent_network
+    until: >
+      dns_register_agent_network.json.data.result is defined and
+      dns_register_agent_network.json.data.result | to_json | regex_search(dns_register_target_subnet_regex)
+    retries: 60
+    delay: 15
+
+  - name: Parse and Isolate Target Guest IP Address
+    ansible.builtin.set_fact:
+      dns_register_discovered_guest_ip: >-
+        {{ 
+          dns_register_agent_network.json.data.result 
+          | map(attribute='ip-addresses') 
+          | flatten 
+          | selectattr('ip-address-type', 'equalto', 'ipv4') 
+          | map(attribute='ip-address') 
+          | reject('equalto', '127.0.0.1') 
+          | select('match', dns_register_target_subnet_regex)
+          | first 
+        }}
+
+  - name: Sanitize Target Domain Name String
+    ansible.builtin.set_fact:
+      dns_register_clean_target_domain: "{{ dns_register_shared_hostname | split('.') | first | trim | lower }}.{{ dns_register_dns_zone }}"
+
+  - name: Register DNS A-Record with Technitium HTTPS API
+    ansible.builtin.uri:
+      url: "https://{{ dns_register_dns_server_fqdn }}:{{ dns_register_dns_secure_port }}/api/zones/records/add"
+      method: GET # Technitium allows POST for this, but GET works
+      validate_certs: true
+      status_code: 200
+      # Passing URL parameters via the 'url' parameter dict is safer and cleaner than concatenating a giant string
+      url_username: ""
+      url_password: ""
+      url: >-
+        https://{{ dns_register_dns_server_fqdn }}:{{ dns_register_dns_secure_port }}/api/zones/records/add?token={{ dns_register_dns_api_token }}&domain={{ dns_register_clean_target_domain }}&zone={{ dns_register_dns_zone }}&type=A&ipAddress={{ dns_register_discovered_guest_ip }}&overwrite=true
