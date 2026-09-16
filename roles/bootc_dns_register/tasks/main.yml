@@ -4,7 +4,7 @@ tasks:
     ansible.builtin.uri:
       url: "https://{{ dns_register_proxmox_api_host }}:{{ proxmox_api_port }}/api2/json/access/ticket"
       method: POST
-      validate_certs: false
+      validate_certs: true
       body_format: form-urlencoded
       body:
         username: "{{ dns_register_proxmox_user }}"
