@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: MIT-0
+---
+- name: Test bootc_dns_register role
+  hosts: localhost
+  remote_user: root
+  roles:
+    - bootc_dns_register

@@ -1,0 +1,56 @@
+---
+- name: Get Auth Ticket from Proxmox
+  ansible.builtin.uri:
+    url: "https://{{ bootc_dns_register_proxmox_api_host }}:{{ bootc_dns_register_proxmox_api_port }}/api2/json/access/ticket"
+    method: POST
+    validate_certs: true
+    body_format: form-urlencoded
+    body:
+      username: "{{ bootc_dns_register_proxmox_user }}"
+      password: "{{ bootc_dns_register_proxmox_password }}"
+  register: bootc_dns_register_auth
+
+- name: Wait for Guest Agent IPv4
+  ansible.builtin.uri:
+    url: >-
+      https://{{ bootc_dns_register_proxmox_api_host }}:{{ bootc_dns_register_proxmox_api_port }}/api2/json/nodes/{{
+      bootc_dns_register_proxmox_node }}/qemu/{{ bootc_dns_register_shared_vmid }}/agent/network-get-interfaces
+    method: GET
+    validate_certs: false
+    headers:
+      Cookie: "PVEAuthCookie={{ bootc_dns_register_auth.json.data.ticket }}"
+  register: bootc_dns_register_agent_network
+  until: >
+    bootc_dns_register_agent_network.json.data.result is defined and
+    bootc_dns_register_agent_network.json.data.result | to_json | regex_search(bootc_dns_register_target_subnet_regex)
+  retries: 60
+  delay: 15
+
+- name: Parse and Isolate Target Guest IP Address
+  ansible.builtin.set_fact:
+    bootc_dns_register_discovered_guest_ip: >-
+      {{
+        bootc_dns_register_agent_network.json.data.result
+        | map(attribute='ip-addresses')
+        | flatten
+        | selectattr('ip-address-type', 'equalto', 'ipv4')
+        | map(attribute='ip-address')
+        | reject('equalto', '127.0.0.1')
+        | select('match', bootc_dns_register_target_subnet_regex)
+        | first
+      }}
+
+- name: Sanitize Target Domain Name String
+  ansible.builtin.set_fact:
+    bootc_dns_register_clean_target_domain: >-
+      {{ bootc_dns_register_shared_hostname | split('.') | first | trim | lower }}.{{ bootc_dns_register_dns_zone }}
+
+- name: Register DNS A-Record with Technitium HTTPS API
+  ansible.builtin.uri:
+    url: >-
+      https://{{ bootc_dns_register_dns_server_fqdn }}:{{ bootc_dns_register_dns_secure_port }}/api/zones/records/add?token={{
+      bootc_dns_register_dns_api_token }}&domain={{ bootc_dns_register_clean_target_domain }}&zone={{
+      bootc_dns_register_dns_zone }}&type=A&ipAddress={{ bootc_dns_register_discovered_guest_ip }}&overwrite=true
+    method: GET
+    validate_certs: true
+    status_code: 200

@@ -1,0 +1,12 @@
+bootc_dns_register_proxmox_api_port: 8006
+bootc_dns_register_target_subnet_regex: '192\.168\.[0-9]+\.[0-9]+' # Make this dynamic per environment
+bootc_dns_register_proxmox_api_host: "" # FQDN of the Proxmox API host, e.g. proxmox.myhome.lab
+bootc_dns_register_proxmox_node: "" # Proxmox node name, e.g. pve1.myhome.lab
+bootc_dns_register_proxmox_user: ""      # Override via Vault/AAP Credentials
+bootc_dns_register_proxmox_password: ""  # Override via Vault/AAP Credentials
+bootc_dns_register_dns_server_fqdn: "" # FQDN of the DNS server, e.g. dns.myhome.lab
+bootc_dns_register_dns_secure_port: "53443"
+bootc_dns_register_dns_api_token: ""     # Override via Vault/AAP Credentials
+bootc_dns_register_dns_zone: "" # DNS zone to register the A-record in, e.g. myhome.lab
+bootc_dns_register_shared_vmid: ""       # Passed from the provisioner
+bootc_dns_register_shared_hostname: ""   # Passed from the provisioner
